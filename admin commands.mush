@@ -7,7 +7,7 @@
  @@     \/  \/ |_|  |_|\__|_| |_(_)_| |_|\___|\__|
  @@
  @@ @created     24th July 2012
- @@ @edited      24th July 2012
+ @@ @edited      25th July 2012
  @@ @package     Resources
  @@
  @@ Copyright (C) 2012 Kevin Kragenbrink <kevin@writh.net>
@@ -34,7 +34,7 @@
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
 @@ Starting up
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@set                                    %! =    QUIET
+@set                                    %! = QUIET
 -
 
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
@@ -66,8 +66,7 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Comman
 @@
 @@ Examples:
 @@ > +resources/spend John=2x3/Purchasing a pair of Desert Eagle pistols.
-&C.RESOURCES/SPEND                      %vA =
-    $+resources/spend *=*/*:
+&C.RESOURCES/SPEND                      %vA = $+resources/spend *=*/*:
 
     @@ Setup Variables;
     think setq(!, pmatch(trim(%0)), PLAYER);
@@ -79,43 +78,45 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Comman
 
     @@ Validate player;
     @assert isdbref(r(PLAYER)) = {
-        @pemit %# = u(M.INVALID_PLAYER, %0);
+        @pemit %# = ulocal(M.INVALID_PLAYER, %0);
     };
 
     @assert hassphere(r(PLAYER), APPROVED) = {
-        @pemit %# = u(M.INVALID_PLAYER, name(r(PLAYER)));
+        @pemit %# = ulocal(M.INVALID_PLAYER, name(r(PLAYER)));
     };
 
     @@ Validate amount;
     @assert isint(r(AMOUNT)) = {
-        @pemit %# = u(M.INVALID_AMOUNT, r(AMOUNT));
+        @pemit %# = ulocal(M.INVALID_AMOUNT, r(AMOUNT));
     };
 
     @@ Validate value;
     @assert isint(r(VALUE)) = {
-        @pemit %# = u(M.INVALID_VALUE, r(AMOUNT));
+        @pemit %# = ulocal(M.INVALID_VALUE, r(AMOUNT));
     };
 
     @assert between(1, 5, r(VALUE), 1) = {
-        @pemit %# = u(M.INVALID_VALUE, r(AMOUNT));
+        @pemit %# = ulocal(M.INVALID_VALUE, r(AMOUNT));
     };
 
     @@ Validate reason;
     @assert strlen(r(REASON)) = {
-        @pemit %# = u(M.INVALID_REASON, r(REASON));
+        @pemit %# = ulocal(M.INVALID_REASON, r(REASON));
     };
 
     @@ Calculate buying power
     think setq(!, mul(r(AMOUNT), r(VALUE)), BUYING_POWER);
 
     @@ Update;
-    think setq(!, u(%vF/F.CREATE_RECORD, r(PLAYER), r(ADMIN), r(BUYING_POWER), r(GAIN), r(REASON)), RESULT);
+    think setq(!, ulocal(F.CREATE_RECORD, r(PLAYER), r(ADMIN), r(BUYING_POWER), r(GAIN), r(REASON)), RESULT);
 
+    @@ Check for failure;
     @break r(RESULT) = {
-        @pemit %# = u(M.RESULT_FAILED, r(RESULT));
+        @pemit %# = ulocal(M.RESULT_FAILED, r(RESULT));
     };
 
-    @pemit %# = u(M.RECORD_CREATED, r(PLAYER), r(BUYING_POWER), r(GAIN), r(REASON));
+    @@ Report success;
+    @pemit %# = ulocal(M.RECORD_CREATED, r(PLAYER), r(BUYING_POWER), r(GAIN), r(REASON));
 -
 
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
@@ -123,7 +124,7 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Comman
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
 &M.INVALID_AMOUNT                       %vA = msg(c, +resources, trim(%0) is not an integer amount.);
 -
-&M.INVALID_PLAYER                       %vA = msg(c, +resources, trim(%0) is not a valid%, approved player.)
+&M.INVALID_PLAYER                       %vA = msg(c, +resources, trim(%0) is not a valid and approved player.)
 -
 &M.INVALID_REASON                       %vA = msg(c, +resources, A valid reason must be supplied.)
 -
