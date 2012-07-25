@@ -1,0 +1,141 @@
+@@@
+ @@ __          __   _ _   _                  _
+ @@ \ \        / /  (_) | | |                | |
+ @@  \ \  /\  / / __ _| |_| |__    _ __   ___| |_
+ @@   \ \/  \/ / '__| | __| '_ \  | '_ \ / _ \ __|
+ @@    \  /\  /| |  | | |_| | | |_| | | |  __/ |_
+ @@     \/  \/ |_|  |_|\__|_| |_(_)_| |_|\___|\__|
+ @@
+ @@ @created     24th July 2012
+ @@ @edited      24th July 2012
+ @@ @package     Resources
+ @@
+ @@ Copyright (C) 2012 Kevin Kragenbrink <kevin@@writh.net>
+ @@
+ @@ Permission is hereby granted, free of charge, to any person obtaining a
+ @@ copy of this software and associated documentation files (the "Software"),
+ @@ to deal in the Software without restriction, including without limitation
+ @@ the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ @@ and/or sell copies of the Software, and to permit persons to whom the
+ @@ Software is furnished to do so, subject to the following conditions:
+ @@
+ @@ The above copyright notice and this permission notice shall be included in
+ @@ all copies or substantial portions of the Software.
+ @@
+ @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ @@ DEALINGS IN THE SOFTWARE.
+ @@@
+
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@@ Starting up
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@set                                    %! =    QUIET
+-
+
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@@ Set up the Object
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Commands%] Resources)), OBJECT)), r(OBJECT), create(%[Commands%] Resources, 10, T))])
+-
+
+@set                                    %vA = !SAFE
+-
+
+@wipe                                   %vA
+-
+
+@set                                    %vA = SAFE
+-
+
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@@ Commands
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+
+@@ Syntax:
+@@   +resources/spend <player>=[<amount>x]<value>/<reason>
+@@
+@@ Description:
+@@   Marks an expenditure of the character's resources.  The <value> should
+@@   represent the level of the spend being recorded, whereas the <amount>
+@@   is how many of those spends are being recorded.
+@@
+@@ Examples:
+@@ > +resources/spend John=2x3/Purchasing a pair of Desert Eagle pistols.
+&C.RESOURCES/SPEND                      %vA =
+    $+resources/spend *=*/*:
+
+    @@ Setup Variables;
+    think setq(!, pmatch(trim(%0)), PLAYER);
+    think setq(!, max(1, trim(before(%1, x))), AMOUNT);
+    think setq(!, trim(ifelse(strmatch(%1, *x*), rest(%1, x), %1)), VALUE);
+    think setq(!, trim(%2), REASON);
+    think setq(!, %#, ADMIN);
+    think setq(!, 0, GAIN);
+
+    @@ Validate player;
+    @assert isdbref(r(PLAYER)) = {
+        @pemit %# = u(M.INVALID_PLAYER, %0);
+    };
+
+    @assert hassphere(r(PLAYER), APPROVED) = {
+        @pemit %# = u(M.INVALID_PLAYER, name(r(PLAYER)));
+    };
+
+    @@ Validate amount;
+    @assert isint(r(AMOUNT)) = {
+        @pemit %# = u(M.INVALID_AMOUNT, r(AMOUNT));
+    };
+
+    @@ Validate value;
+    @assert isint(r(VALUE)) = {
+        @pemit %# = u(M.INVALID_VALUE, r(AMOUNT));
+    };
+
+    @assert between(1, 5, r(VALUE), 1) = {
+        @pemit %# = u(M.INVALID_VALUE, r(AMOUNT));
+    };
+
+    @@ Validate reason;
+    @assert strlen(r(REASON)) = {
+        @pemit %# = u(M.INVALID_REASON, r(REASON));
+    };
+
+    @@ Calculate buying power
+    think setq(!, mul(r(AMOUNT), r(VALUE)), BUYING_POWER);
+
+    @@ Update;
+    think setq(!, u(%vF/F.CREATE_RECORD, r(PLAYER), r(ADMIN), r(BUYING_POWER), r(GAIN), r(REASON)), RESULT);
+
+    @break r(RESULT) = {
+        @pemit %# = u(M.RESULT_FAILED, r(RESULT));
+    };
+
+    @pemit %# = u(M.RECORD_CREATED, r(PLAYER), r(BUYING_POWER), r(GAIN), r(REASON));
+-
+
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@@ Messages
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+&M.INVALID_AMOUNT                       %vA = msg(c, +resources, trim(%0) is not an integer amount.);
+-
+&M.INVALID_PLAYER                       %vA = msg(c, +resources, trim(%0) is not a valid%, approved player.)
+-
+&M.INVALID_REASON                       %vA = msg(c, +resources, A valid reason must be supplied.)
+-
+&M.INVALID_VALUE                        %vA = msg(c, +resources, trim(%0) is not an integer value.)
+-
+&M.RESULT_FAILED                        %vA = msg(c, +resources, Could not create a resources log: %0)
+-
+&M.RECORD_CREATED                       %vA = msg(c, +resources, ifelse(%2, Spent, Increased) [name(%0)]'s buying power by %1.)
+-
+
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@@ Ending
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@set                                    %! = !QUIET
+-
