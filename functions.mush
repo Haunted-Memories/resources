@@ -1,45 +1,45 @@
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@@ __          __   _ _   _                  _
-@@ \ \        / /  (_) | | |                | |
-@@  \ \  /\  / / __ _| |_| |__    _ __   ___| |_
-@@   \ \/  \/ / '__| | __| '_ \  | '_ \ / _ \ __|
-@@    \  /\  /| |  | | |_| | | |_| | | |  __/ |_
-@@     \/  \/ |_|  |_|\__|_| |_(_)_| |_|\___|\__|
-@@
-@@ @created     25th July 2012
-@@ @edited      30th July 2012
-@@ @package     Resources
-@@
-@@ Copyright (C) 2012 Kevin Kragenbrink <kevin@writh.net>
-@@
-@@ Permission is hereby granted, free of charge, to any person obtaining a
-@@ copy of this software and associated documentation files (the "Software"),
-@@ to deal in the Software without restriction, including without limitation
-@@ the rights to use, copy, modify, merge, publish, distribute, sublicense,
-@@ and/or sell copies of the Software, and to permit persons to whom the
-@@ Software is furnished to do so, subject to the following conditions:
-@@
-@@ The above copyright notice and this permission notice shall be included in
-@@ all copies or substantial portions of the Software.
-@@
-@@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-@@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-@@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-@@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-@@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-@@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-@@ DEALINGS IN THE SOFTWARE.
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+## ##########################################################################@ ##
+## __          __   _ _   _                  _
+## \ \        / /  (_) | | |                | |
+##  \ \  /\  / / __ _| |_| |__    _ __   ___| |_
+##   \ \/  \/ / '__| | __| '_ \  | '_ \ / _ \ __|
+##    \  /\  /| |  | | |_| | | |_| | | |  __/ |_
+##     \/  \/ |_|  |_|\__|_| |_(_)_| |_|\___|\__|
+##
+## @created     25th July 2012
+## @edited      30th July 2012
+## @package     Resources
+##
+## Copyright (C) 2012 Kevin Kragenbrink <kevin@writh.net>
+##
+## Permission is hereby granted, free of charge, to any person obtaining a
+## copy of this software and associated documentation files (the "Software"),
+## to deal in the Software without restriction, including without limitation
+## the rights to use, copy, modify, merge, publish, distribute, sublicense,
+## and/or sell copies of the Software, and to permit persons to whom the
+## Software is furnished to do so, subject to the following conditions:
+##
+## The above copyright notice and this permission notice shall be included in
+## all copies or substantial portions of the Software.
+##
+## THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+## IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+## FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+## AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+## LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+## DEALINGS IN THE SOFTWARE.
+## ##########################################################################@ ##
 
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@@ Starting up
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+## ################################## ##
+## Starting up
+## ################################## ##
 @set                                    %! = QUIET
 -
 
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@@ Set up the Object
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+## ################################## ##
+## Set up the Object
+## ################################## ##
 think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functions%] Resources)), OBJECT)), r(OBJECT), create(%[Functions%] Resources, 10, T))])
 -
 
@@ -52,19 +52,19 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
 @set                                    %vA = SAFE
 -
 
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@@ Functions
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+## ################################## ##
+## Functions
+## ################################## ##
 
-@@ Creates a new record in the resources log for the specified player.
-@@
-@@ @param   %0      dbref       Player
-@@ @param   %1      dbref       Admin
-@@ @param   %2      integer     Buying Power
-@@ @param   %3      boolean     is Gain?
-@@ @param   %4      text        Reason
-@@
-@@ @return  string on error
+## Creates a new record in the resources log for the specified player.
+##
+## @param   %0      dbref       Player
+## @param   %1      dbref       Admin
+## @param   %2      integer     Buying Power
+## @param   %3      boolean     is Gain?
+## @param   %4      text        Reason
+##
+## @return  string on error
 &F.CREATE_RECORD                        %vA =
     sql(
         INSERT INTO `[v(D.TABLE_NAME)]`
@@ -97,12 +97,12 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
     [u(F.FORMAT_REASON, elementsmux(%0, 7, v(D.SEPARATOR_COLUMN)), 38)];
 -
 
-@@ Lists records for the specified player back by the specified number of days.
-@@
-@@ @param   %0      dbref       Player
-@@ @param   %1      integer     Days
-@@
-@@ @return  `-delimited record list
+## Lists records for the specified player back by the specified number of days.
+##
+## @param   %0      dbref       Player
+## @param   %1      integer     Days
+##
+## @return  `-delimited record list
 &F.READ_RECORDS                         %vA =
     sql(
         SELECT *
@@ -114,17 +114,17 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
     )
 -
 
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@@ Includes and Triggers
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+## ################################## ##
+## Includes and Triggers
+## ################################## ##
 
-@@ Adds a record of a resources change.
-@@
-@@ @param   %0      dbref       Player
-@@ @param   %1      integer     Value
-@@ @param   %1      string      Amount and Value (format: /(\d+)x(\d+)/)
-@@ @param   %2      string      Reason
-@@ @param   %3      boolean     Gain
+## Adds a record of a resources change.
+##
+## @param   %0      dbref       Player
+## @param   %1      integer     Value
+## @param   %1      string      Amount and Value (format: /(\d+)x(\d+)/)
+## @param   %2      string      Reason
+## @param   %3      boolean     Gain
 &I.CREATE                               %vA =
 
     @@ Setup Variables;
@@ -178,10 +178,10 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
     @pemit %# = ulocal(M.RECORD_CREATED, r(PLAYER), r(BUYING_POWER), r(GAIN), r(REASON));
 -
 
-@@ Displays a player's recent resources log.
-@@
-@@ @param   %0      dbref       Player
-@@ @param   [%1]    integer     Days to Review
+## Displays a player's recent resources log.
+##
+## @param   %0      dbref       Player
+## @param   [%1]    integer     Days to Review
 &I.READ                                 %vA =
     @@ Setup variables;
     think setq(!, pmatch(trim(%0)), PLAYER);
@@ -222,9 +222,9 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
     @pemit %# = tail();
 -
 
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@@ Column formats
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+## ################################## ##
+## Column formats
+## ################################## ##
 &F.FORMAT_DATE                          %vA = ljust(%0, 10)
 -
 &F.FORMAT_ADMIN                         %vA = ljust(%0, 20)
@@ -234,9 +234,9 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
 &F.FORMAT_REASON                        %vA = wrap(%0, 40, left, , , ifelse(strlen(%1), %1, 38))
 -
 
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@@ Messages
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+## ################################## ##
+## Messages
+## ################################## ##
 &M.INVALID_AMOUNT                       %vA = msg(c, +resources, trim(%0) is not an integer amount.);
 -
 &M.INVALID_PLAYER                       %vA = msg(c, +resources, trim(%0) is not a valid and approved player.)
@@ -250,9 +250,9 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
 &M.RECORD_CREATED                       %vA = msg(c, +resources, ifelse(%2, Spent, Increased) buying power for [name(%0)] by %1.)
 -
 
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@@ Data
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+## ################################## ##
+## Data
+## ################################## ##
 &D.DEFAULT_READ                         %vA = 30
 -
 &D.SEPARATOR_ROW                        %vA = `
@@ -262,8 +262,8 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
 &D.TABLE_NAME                           %vA = hm_resources_log
 -
 
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@@ Ending
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+## ################################## ##
+## Ending
+## ################################## ##
 @set                                    %! = !QUIET
 -
