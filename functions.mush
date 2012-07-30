@@ -7,7 +7,7 @@
 @@     \/  \/ |_|  |_|\__|_| |_(_)_| |_|\___|\__|
 @@
 @@ @created     25th July 2012
-@@ @edited      25th July 2012
+@@ @edited      30th July 2012
 @@ @package     Resources
 @@
 @@ Copyright (C) 2012 Kevin Kragenbrink <kevin@writh.net>
@@ -55,9 +55,10 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
 @@ Functions
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+
 @@ Creates a new record in the resources log for the specified player.
 @@
-@@ @param   %)      dbref       Player
+@@ @param   %0      dbref       Player
 @@ @param   %1      dbref       Admin
 @@ @param   %2      integer     Buying Power
 @@ @param   %3      boolean     is Gain?
@@ -76,15 +77,191 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
             details
         )
         VALUES (
-            NOW(),
+            [vsecs()],
             "%0",
             "%1",
             %2,
-            t(%3),
-            "[edit(%4,",%%")]"
+            [t(%3)],
+            "[edit(%4, ", %%")]"
         )
     )
 -
+
+&F.DISPLAY_RECORD                       %vA =
+    [u(F.FORMAT_DATE, timefmt($b $02D $04Y, elementsmux(%0, 1, v(D.SEPARATOR_COLUMN))))]
+    [u(F.FORMAT_ADMIN, elementsmux(%0, 3, v(D.SEPARATOR_COLUMN)))]
+    [u(F.FORMAT_BP,
+        %ch[ifelse(elementsmux(%0, 6, v(D.SEPARATOR_COLUMN)), %cg+, %cr-)]
+        [elementsmux(%0, 5, v(D.SEPARATOR_COLUMN))]%cn
+    )]
+    [u(F.FORMAT_REASON, elementsmux(%0, 7, v(D.SEPARATOR_COLUMN)), 38)];
+-
+
+@@ Lists records for the specified player back by the specified number of days.
+@@
+@@ @param   %0      dbref       Player
+@@ @param   %1      integer     Days
+@@
+@@ @return  `-delimited record list
+&F.READ_RECORDS                         %vA =
+    sql(
+        SELECT *
+        FROM `[v(D.TABLE_NAME)]`
+        WHERE player = '%0'
+        AND created_at BETWEEN ([sub(vsecs(), mul(60,60,24,%1))]) AND [vsecs()],
+        v(D.SEPARATOR_ROW),
+        v(D.SEPARATOR_COLUMN)
+    )
+-
+
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@@ Includes and Triggers
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+
+@@ Adds a record of a resources change.
+@@
+@@ @param   %0      dbref       Player
+@@ @param   %1      integer     Value
+@@ @param   %1      string      Amount and Value (format: /(\d+)x(\d+)/)
+@@ @param   %2      string      Reason
+@@ @param   %3      boolean     Gain
+&I.CREATE                               %vA =
+
+    @@ Setup Variables;
+    think setq(!, pmatch(trim(%0)), PLAYER);
+    think setq(!, max(1, trim(before(%1, x))), AMOUNT);
+    think setq(!, trim(ifelse(strmatch(%1, *x*), rest(%1, x), %1)), VALUE);
+    think setq(!, trim(%2), REASON);
+    think setq(!, %#, ADMIN);
+    think setq(!, %3, GAIN);
+
+    @@ Validate player;
+    @assert isdbref(r(PLAYER)) = {
+        @pemit %# = ulocal(M.INVALID_PLAYER, %0);
+    };
+
+    @assert hassphere(r(PLAYER), APPROVED) = {
+        @pemit %# = ulocal(M.INVALID_PLAYER, name(r(PLAYER)));
+    };
+
+    @@ Validate amount;
+    @assert isint(r(AMOUNT)) = {
+        @pemit %# = ulocal(M.INVALID_AMOUNT, r(AMOUNT));
+    };
+
+    @@ Validate value;
+    @assert isint(r(VALUE)) = {
+        @pemit %# = ulocal(M.INVALID_VALUE, r(AMOUNT));
+    };
+
+    @assert between(1, 5, r(VALUE), 1) = {
+        @pemit %# = ulocal(M.INVALID_VALUE, r(AMOUNT));
+    };
+
+    @@ Validate reason;
+    @assert strlen(r(REASON)) = {
+        @pemit %# = ulocal(M.INVALID_REASON, r(REASON));
+    };
+
+    @@ Calculate buying power
+    think setq(!, mul(r(AMOUNT), r(VALUE)), BUYING_POWER);
+
+    @@ Update;
+    think setq(!, ulocal(F.CREATE_RECORD, r(PLAYER), r(ADMIN), r(BUYING_POWER), r(GAIN), r(REASON)), RESULT);
+
+    @@ Check for failure;
+    @break r(RESULT) = {
+        @pemit %# = ulocal(M.RESULT_FAILED, r(RESULT));
+    };
+
+    @@ Report success;
+    @pemit %# = ulocal(M.RECORD_CREATED, r(PLAYER), r(BUYING_POWER), r(GAIN), r(REASON));
+-
+
+@@ Displays a player's recent resources log.
+@@
+@@ @param   %0      dbref       Player
+@@ @param   [%1]    integer     Days to Review
+&I.READ                                 %vA =
+    @@ Setup variables;
+    think setq(!, pmatch(trim(%0)), PLAYER);
+    think setq(!, trim(ifelse(%1, %1, v(D.DEFAULT_READ))), DAYS);
+
+    @@ Validate player;
+    @assert isdbref(r(PLAYER)) = {
+        @pemit %# = ulocal(M.INVALID_PLAYER, %0);
+    };
+
+    @assert hassphere(r(PLAYER), APPROVED) = {
+        @pemit %# = ulocal(M.INVALID_PLAYER, name(r(PLAYER)));
+    };
+
+    @@ Validate days;
+    @assert isint(r(AMOUNT)) = {
+        @pemit %# = ulocal(M.INVALID_AMOUNT, r(AMOUNT));
+    };
+
+    @@ Header;
+    @pemit %# = header(r(DAYS) Day Resource Log - [name(r(PLAYER))]<[r(PLAYER)]>);
+    @pemit %# =
+        [u(F.FORMAT_DATE, Date)]
+        [u(F.FORMAT_ADMIN, Admin)]
+        [u(F.FORMAT_BP, BP)]
+        [u(F.FORMAT_REASON, Reason, 38)];
+    @pemit %# = separator();
+
+    @@ Body;
+    @pemit %# = list(
+        ulocal(F.READ_RECORDS, r(PLAYER), r(DAYS)),
+        ulocal(F.DISPLAY_RECORD, itext(0)),
+        v(D.SEPARATOR_ROW)
+    );
+
+    @@ Footer;
+    @@ TODO: Add 'available resources' here.;
+    @pemit %# = tail();
+-
+
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@@ Column formats
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+&F.FORMAT_DATE                          %vA = ljust(%0, 10)
+-
+&F.FORMAT_ADMIN                         %vA = ljust(%0, 20)
+-
+&F.FORMAT_BP                            %vA = rjust(%0, 5)
+-
+&F.FORMAT_REASON                        %vA = wrap(%0, 40, left, , , ifelse(strlen(%1), %1, 38))
+-
+
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@@ Messages
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+&M.INVALID_AMOUNT                       %vA = msg(c, +resources, trim(%0) is not an integer amount.);
+-
+&M.INVALID_PLAYER                       %vA = msg(c, +resources, trim(%0) is not a valid and approved player.)
+-
+&M.INVALID_REASON                       %vA = msg(c, +resources, A valid reason must be supplied.)
+-
+&M.INVALID_VALUE                        %vA = msg(c, +resources, trim(%0) is not an integer value.)
+-
+&M.RESULT_FAILED                        %vA = msg(c, +resources, Could not create a resources log: %0)
+-
+&M.RECORD_CREATED                       %vA = msg(c, +resources, ifelse(%2, Spent, Increased) buying power for [name(%0)] by %1.)
+-
+
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+@@ Data
+@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
+&D.DEFAULT_READ                         %vA = 30
+-
+&D.SEPARATOR_ROW                        %vA = `
+-
+&D.SEPARATOR_COLUMN                     %vA = |
+-
+&D.TABLE_NAME                           %vA = hm_resources_log
+-
+
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
 @@ Ending
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@

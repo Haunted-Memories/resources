@@ -7,7 +7,7 @@
 @@     \/  \/ |_|  |_|\__|_| |_(_)_| |_|\___|\__|
 @@
 @@ @created     24th July 2012
-@@ @edited      25th July 2012
+@@ @edited      30th July 2012
 @@ @package     Resources
 @@
 @@ Copyright (C) 2012 Kevin Kragenbrink <kevin@writh.net>
@@ -57,82 +57,50 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Comman
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
 
 @@ Syntax:
-@@   +resources/spend <player>=[<amount>x]<value>/<reason>
+@@  +resources <player>[/<days>]
 @@
 @@ Description:
-@@   Marks an expenditure of the character's resources.  The <value> should
-@@   represent the level of the spend being recorded, whereas the <amount>
-@@   is how many of those spends are being recorded.
+@@  Views a player's resources log for the last 30 days. Optionally,
+@@  shows additional or fewer days based on input.
+@@
+@@ Example:
+@@  +resources John/45
+&C.+RES                                 %vA = $+res *:@include %!/I.READ = %0;
+-
+&C.+RES_DAYS                            %vA = $+res */*:@include %!/I.READ = %0, %1;
+-
+&C.+RESOURCES                           %vA = $+resources *:@include %!/I.READ = %0;
+-
+&C.+RESOURCES_DAYS                      %vA = $+resources */*:@include %!/I.READ = %0, %1;
+
+@@ Syntax:
+@@  +resources/give <player>=[<amount>x]<value>/<reason>
+@@
+@@ Description:
+@@  Marks a reward of resources to a character.  The <value> should
+@@  represent the level of the reward being recorded, whereas the <amount>
+@@  is how many of those spends are being recorded.
 @@
 @@ Examples:
-@@ > +resources/spend John=2x3/Purchasing a pair of Desert Eagle pistols.
-&C.RESOURCES/SPEND                      %vA = $+resources/spend *=*/*:
-
-    @@ Setup Variables;
-    think setq(!, pmatch(trim(%0)), PLAYER);
-    think setq(!, max(1, trim(before(%1, x))), AMOUNT);
-    think setq(!, trim(ifelse(strmatch(%1, *x*), rest(%1, x), %1)), VALUE);
-    think setq(!, trim(%2), REASON);
-    think setq(!, %#, ADMIN);
-    think setq(!, 0, GAIN);
-
-    @@ Validate player;
-    @assert isdbref(r(PLAYER)) = {
-        @pemit %# = ulocal(M.INVALID_PLAYER, %0);
-    };
-
-    @assert hassphere(r(PLAYER), APPROVED) = {
-        @pemit %# = ulocal(M.INVALID_PLAYER, name(r(PLAYER)));
-    };
-
-    @@ Validate amount;
-    @assert isint(r(AMOUNT)) = {
-        @pemit %# = ulocal(M.INVALID_AMOUNT, r(AMOUNT));
-    };
-
-    @@ Validate value;
-    @assert isint(r(VALUE)) = {
-        @pemit %# = ulocal(M.INVALID_VALUE, r(AMOUNT));
-    };
-
-    @assert between(1, 5, r(VALUE), 1) = {
-        @pemit %# = ulocal(M.INVALID_VALUE, r(AMOUNT));
-    };
-
-    @@ Validate reason;
-    @assert strlen(r(REASON)) = {
-        @pemit %# = ulocal(M.INVALID_REASON, r(REASON));
-    };
-
-    @@ Calculate buying power
-    think setq(!, mul(r(AMOUNT), r(VALUE)), BUYING_POWER);
-
-    @@ Update;
-    think setq(!, ulocal(F.CREATE_RECORD, r(PLAYER), r(ADMIN), r(BUYING_POWER), r(GAIN), r(REASON)), RESULT);
-
-    @@ Check for failure;
-    @break r(RESULT) = {
-        @pemit %# = ulocal(M.RESULT_FAILED, r(RESULT));
-    };
-
-    @@ Report success;
-    @pemit %# = ulocal(M.RECORD_CREATED, r(PLAYER), r(BUYING_POWER), r(GAIN), r(REASON));
+@@  +resources/give John=2x2/Sold a pair of Desert Eagle pistols.
+&C.RES/GIVE                             %vA = $+res/give *=*/*:@include %!/I.CREATE = %0, %1, %2, 1;
+-
+&C.RESOURCES/GIVE                       %vA = $+resources/give *=*/*:@include %!/I.CREATE = %0, %1, %2, 1;
 -
 
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-@@ Messages
-@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
-&M.INVALID_AMOUNT                       %vA = msg(c, +resources, trim(%0) is not an integer amount.);
+@@ Syntax:
+@@  +resources/spend <player>=[<amount>x]<value>/<reason>
+@@
+@@ Description:
+@@  Marks an expenditure of the character's resources.  The <value> should
+@@  represent the level of the spend being recorded, whereas the <amount>
+@@  is how many of those spends are being recorded.
+@@
+@@ Examples:
+@@  +resources/spend John=2x3/Purchasing a pair of Desert Eagle pistols.
+&C.RES/SPEND                            %vA = $+res/spend *=*/*:@include %!/I.CREATE = %0, %1, %2, 0;
 -
-&M.INVALID_PLAYER                       %vA = msg(c, +resources, trim(%0) is not a valid and approved player.)
--
-&M.INVALID_REASON                       %vA = msg(c, +resources, A valid reason must be supplied.)
--
-&M.INVALID_VALUE                        %vA = msg(c, +resources, trim(%0) is not an integer value.)
--
-&M.RESULT_FAILED                        %vA = msg(c, +resources, Could not create a resources log: %0)
--
-&M.RECORD_CREATED                       %vA = msg(c, +resources, ifelse(%2, Spent, Increased) [name(%0)]'s buying power by %1.)
+&C.RESOURCES/SPEND                      %vA = $+resources/spend *=*/*:@include %!/I.CREATE = %0, %1, %2, 0;
 -
 
 @@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@
