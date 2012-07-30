@@ -34,7 +34,6 @@
 hm_resources_log:
   id                                    : ~
   created_at                            : ~
-  updated_at                            : ~
   admin                                 : @dbref
   player                                : @dbref
   buying_power :

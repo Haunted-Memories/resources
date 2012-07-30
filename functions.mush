@@ -40,7 +40,7 @@
 ## ################################## ##
 ## Set up the Object
 ## ################################## ##
-think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functions%] Resources)), OBJECT)), r(OBJECT), create(%[Functions%] Resources, 10, T))])
+think set(%!, VA:[ifelse(isdbref(setr(!, searchng(name=%[Functions%] Resources), OBJECT)), r(OBJECT), create(%[Functions%] Resources, 10, T))])
 -
 
 @set                                    %vA = !SAFE
@@ -78,8 +78,8 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
         )
         VALUES (
             [vsecs()],
-            "%0",
             "%1",
+            "%0",
             %2,
             [t(%3)],
             "[edit(%4, ", %%")]"
@@ -88,13 +88,10 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
 -
 
 &F.DISPLAY_RECORD                       %vA =
-    [u(F.FORMAT_DATE, timefmt($b $02D $04Y, elementsmux(%0, 1, v(D.SEPARATOR_COLUMN))))]
-    [u(F.FORMAT_ADMIN, elementsmux(%0, 3, v(D.SEPARATOR_COLUMN)))]
-    [u(F.FORMAT_BP,
-        %ch[ifelse(elementsmux(%0, 6, v(D.SEPARATOR_COLUMN)), %cg+, %cr-)]
-        [elementsmux(%0, 5, v(D.SEPARATOR_COLUMN))]%cn
-    )]
-    [u(F.FORMAT_REASON, elementsmux(%0, 7, v(D.SEPARATOR_COLUMN)), 38)];
+    [u(F.FORMAT_DATE, timefmt($b $02D $04Y, elementsmux(%0, 2, v(D.SEPARATOR_COLUMN))))]
+    [u(F.FORMAT_ADMIN, moniker(elementsmux(%0, 3, v(D.SEPARATOR_COLUMN))))]
+    [u(F.FORMAT_BP, %ch[ifelse(elementsmux(%0, 6, v(D.SEPARATOR_COLUMN)), %cg+, %cr-)][elementsmux(%0, 5, v(D.SEPARATOR_COLUMN))]%cn)]
+    [u(F.FORMAT_REASON, elementsmux(%0, 7, v(D.SEPARATOR_COLUMN)), 38)]
 -
 
 ## Lists records for the specified player back by the specified number of days.
@@ -129,7 +126,7 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
 
     @@ Setup Variables;
     think setq(!, pmatch(trim(%0)), PLAYER);
-    think setq(!, max(1, trim(before(%1, x))), AMOUNT);
+    think setq(!, trim(ifelse(strmatch(%1, *x*), before(%1, x), 1)), AMOUNT);
     think setq(!, trim(ifelse(strmatch(%1, *x*), rest(%1, x), %1)), VALUE);
     think setq(!, trim(%2), REASON);
     think setq(!, %#, ADMIN);
@@ -163,8 +160,8 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
         @pemit %# = ulocal(M.INVALID_REASON, r(REASON));
     };
 
-    @@ Calculate buying power
-    think setq(!, mul(r(AMOUNT), r(VALUE)), BUYING_POWER);
+    @@ Calculate buying power;
+    think setq(!, mul(r(AMOUNT), ulocal(F.CALCULATE_BUYING_POWER, r(VALUE))), BUYING_POWER);
 
     @@ Update;
     think setq(!, ulocal(F.CREATE_RECORD, r(PLAYER), r(ADMIN), r(BUYING_POWER), r(GAIN), r(REASON)), RESULT);
@@ -197,12 +194,15 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
     };
 
     @@ Validate days;
-    @assert isint(r(AMOUNT)) = {
-        @pemit %# = ulocal(M.INVALID_AMOUNT, r(AMOUNT));
+    @assert isint(r(DAYS)) = {
+        @pemit %# = ulocal(M.INVALID_AMOUNT, r(DAYS));
     };
 
+    @@ Get BP LIMIT;
+    think setq(!, ulocal(F.CALCULATE_BUYING_POWER, getstat(r(PLAYER), RESOURCES)), BUYING_POWER_LIMIT);
+
     @@ Header;
-    @pemit %# = header(r(DAYS) Day Resource Log - [name(r(PLAYER))]<[r(PLAYER)]>);
+    @pemit %# = header(r(DAYS) Day Resource Log for [name(r(PLAYER))]<[r(PLAYER)]>);
     @pemit %# =
         [u(F.FORMAT_DATE, Date)]
         [u(F.FORMAT_ADMIN, Admin)]
@@ -213,23 +213,25 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
     @@ Body;
     @pemit %# = list(
         ulocal(F.READ_RECORDS, r(PLAYER), r(DAYS)),
-        ulocal(F.DISPLAY_RECORD, itext(0)),
+        ulocal(F.DISPLAY_RECORD, itext(0))[setq(!, add(r(BUYING_POWER_USED), ifelse(elementsmux(itext(0), 6, v(D.SEPARATOR_COLUMN)), -, +)[elementsmux(itext(0), 5, v(D.SEPARATOR_COLUMN))]), BUYING_POWER_USED)],
         v(D.SEPARATOR_ROW)
     );
 
     @@ Footer;
-    @@ TODO: Add 'available resources' here.;
-    @pemit %# = tail();
+    @pemit %# = tail(Available Buying Power: [sub(r(BUYING_POWER_LIMIT), r(BUYING_POWER_USED))]);
+-
+
+&F.CALCULATE_BUYING_POWER               %vA = power(5, dec(%0))
 -
 
 ## ################################## ##
 ## Column formats
 ## ################################## ##
-&F.FORMAT_DATE                          %vA = ljust(%0, 10)
+&F.FORMAT_DATE                          %vA = ljust(%0, 12)
 -
-&F.FORMAT_ADMIN                         %vA = ljust(%0, 20)
+&F.FORMAT_ADMIN                         %vA = ljust(%0, 18)
 -
-&F.FORMAT_BP                            %vA = rjust(%0, 5)
+&F.FORMAT_BP                            %vA = rjust(%0, 4)%b
 -
 &F.FORMAT_REASON                        %vA = wrap(%0, 40, left, , , ifelse(strlen(%1), %1, 38))
 -
@@ -237,7 +239,7 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
 ## ################################## ##
 ## Messages
 ## ################################## ##
-&M.INVALID_AMOUNT                       %vA = msg(c, +resources, trim(%0) is not an integer amount.);
+&M.INVALID_AMOUNT                       %vA = msg(c, +resources, trim(%0) is not an integer amount.)
 -
 &M.INVALID_PLAYER                       %vA = msg(c, +resources, trim(%0) is not a valid and approved player.)
 -
@@ -247,7 +249,7 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Functi
 -
 &M.RESULT_FAILED                        %vA = msg(c, +resources, Could not create a resources log: %0)
 -
-&M.RECORD_CREATED                       %vA = msg(c, +resources, ifelse(%2, Spent, Increased) buying power for [name(%0)] by %1.)
+&M.RECORD_CREATED                       %vA = msg(c, +resources, ifelse(%2, Increased, Spent) buying power for [name(%0)] by %1.)
 -
 
 ## ################################## ##

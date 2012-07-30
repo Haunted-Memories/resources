@@ -40,7 +40,7 @@
 ## ################################## ##
 ## Set up the Object
 ## ################################## ##
-think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Commands%] Resources - Staff)), OBJECT)), r(OBJECT), create(%[Commands%] Resources - Staff, 10, T))])
+think set(%!, VA:[ifelse(isdbref(setr(!, searchng(name=%[Commands%] Resources - Staff), OBJECT)), r(OBJECT), create(%[Commands%] Resources - Staff, 10, T))])
 -
 
 @set                                    %vA = !SAFE
@@ -65,13 +65,13 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Comman
 ##
 ## Example:
 ##  +resources John/45
-&C.+RES                                 %vA = $+res *:@include %!/I.READ = %0;
+&C.+RES                                 %vA = $+res *:@include %!/I.READ;
 -
-&C.+RES_DAYS                            %vA = $+res */*:@include %!/I.READ = %0, %1;
+&C.+RES_DAYS                            %vA = $+res */*:@include %!/I.READ;
 -
-&C.+RESOURCES                           %vA = $+resources *:@include %!/I.READ = %0;
+&C.+RESOURCES                           %vA = $+resources *:@include %!/I.READ;
 -
-&C.+RESOURCES_DAYS                      %vA = $+resources */*:@include %!/I.READ = %0, %1;
+&C.+RESOURCES_DAYS                      %vA = $+resources */*:@include %!/I.READ;
 -
 
 ## Syntax:
@@ -84,9 +84,9 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Comman
 ##
 ## Examples:
 ##  +resources/give John=2x2/Sold a pair of Desert Eagle pistols.
-&C.RES/GIVE                             %vA = $+res/give *=*/*:@include %!/I.CREATE = %0, %1, %2, 1;
+&C.RES/GIVE                             %vA = $+res/give *=*/*:@include %!/I.CREATE = ,,, 1;
 -
-&C.RESOURCES/GIVE                       %vA = $+resources/give *=*/*:@include %!/I.CREATE = %0, %1, %2, 1;
+&C.RESOURCES/GIVE                       %vA = $+resources/give *=*/*:@include %!/I.CREATE = ,,, 1;
 -
 
 ## Syntax:
@@ -99,9 +99,9 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Comman
 ##
 ## Examples:
 ##  +resources/spend John=2x3/Purchasing a pair of Desert Eagle pistols.
-&C.RES/SPEND                            %vA = $+res/spend *=*/*:@include %!/I.CREATE = %0, %1, %2, 0;
+&C.RES/SPEND                            %vA = $+res/spend *=*/*:@include %!/I.CREATE = ,,, 0;
 -
-&C.RESOURCES/SPEND                      %vA = $+resources/spend *=*/*:@include %!/I.CREATE = %0, %1, %2, 0;
+&C.RESOURCES/SPEND                      %vA = $+resources/spend *=*/*:@include %!/I.CREATE = ,,, 0;
 -
 
 ## ################################## ##

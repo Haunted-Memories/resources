@@ -40,7 +40,7 @@
 ## ################################## ##
 ## Set up the Object
 ## ################################## ##
-think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Commands%] Resources - Players)), OBJECT)), r(OBJECT), create(%[Commands%] Resources - Players, 10, T))])
+think set(%!, VA:[ifelse(isdbref(setr(!, searchng(name=%[Commands%] Resources - Players), OBJECT)), r(OBJECT), create(%[Commands%] Resources - Players, 10, T))])
 -
 
 @set                                    %vA = !SAFE
@@ -50,6 +50,12 @@ think set(%!, VA:[ifelse(isdbref(setr(!, search(eobject=match(name(##), %[Comman
 -
 
 @set                                    %vA = SAFE
+-
+
+&F.ISSTAFF                              %vA = [isstaff(%#)]
+-
+
+@lock/use                               %vA = F.ISSTAFF/0
 -
 
 ## ################################## ##
