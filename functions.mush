@@ -126,7 +126,7 @@ think set(%!, VA:[ifelse(isdbref(setr(!, searchng(name=%[Functions%] Resources),
 
     @@ Setup Variables;
     think setq(!, pmatch(trim(%0)), PLAYER);
-    think setq(!, trim(ifelse(strmatch(%1, *x*), before(%1, x), 1)), AMOUNT);
+    think setq(!, trim(ifelse(strmatch(%1, *x*), before(%1, x), 0)), AMOUNT);
     think setq(!, trim(ifelse(strmatch(%1, *x*), rest(%1, x), %1)), VALUE);
     think setq(!, trim(%2), REASON);
     think setq(!, %#, ADMIN);
@@ -148,11 +148,14 @@ think set(%!, VA:[ifelse(isdbref(setr(!, searchng(name=%[Functions%] Resources),
 
     @@ Validate value;
     @assert isint(r(VALUE)) = {
-        @pemit %# = ulocal(M.INVALID_VALUE, r(AMOUNT));
+        @pemit %# = ulocal(M.INVALID_VALUE, r(VALUE));
     };
 
-    @assert between(1, 5, r(VALUE), 1) = {
-        @pemit %# = ulocal(M.INVALID_VALUE, r(AMOUNT));
+    @assert ifelse(r(AMOUNT),
+                between(1, 5, r(VALUE), 1),
+                gt(r(VALUE), 0)
+            ) = {
+        @pemit %# = ulocal(M.INVALID_VALUE, r(VALUE));
     };
 
     @@ Validate reason;
@@ -161,7 +164,10 @@ think set(%!, VA:[ifelse(isdbref(setr(!, searchng(name=%[Functions%] Resources),
     };
 
     @@ Calculate buying power;
-    think setq(!, mul(r(AMOUNT), ulocal(F.CALCULATE_BUYING_POWER, r(VALUE))), BUYING_POWER);
+    think setq(!, if(r(AMOUNT),
+        mul(r(AMOUNT), ulocal(F.CALCULATE_BUYING_POWER, r(VALUE))),
+        r(VALUE)
+    ), BUYING_POWER);
 
     @@ Update;
     think setq(!, ulocal(F.CREATE_RECORD, r(PLAYER), r(ADMIN), r(BUYING_POWER), r(GAIN), r(REASON)), RESULT);
